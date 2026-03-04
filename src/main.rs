@@ -1,5 +1,7 @@
 pub mod cli;
 pub mod dispatcher;
+pub mod db;
+pub mod generator;
 
 use clap::Parser;
 
