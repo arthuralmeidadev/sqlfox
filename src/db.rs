@@ -1,3 +1,5 @@
+pub mod postgres;
+
 use sqlx::Database;
 
 #[derive(Debug, Clone)]
@@ -18,11 +20,13 @@ pub struct Column {
 
 #[derive(Debug, Clone)]
 pub struct TableMetadata {
+    pub schema: String,
     pub name: String,
     pub columns: Vec<Column>,
 }
 
-pub trait FetchMetadata {
+#[async_trait::async_trait]
+pub trait FetchMetadata: Send + Sync {
     type DB: Database;
 
     async fn fetch_tables(
@@ -30,5 +34,24 @@ pub trait FetchMetadata {
         pool: &sqlx::Pool<Self::DB>,
         schema: &str,
         tables: Vec<&str>,
-    ) -> anyhow::Result<TableMetadata>;
+    ) -> anyhow::Result<Vec<TableMetadata>>;
+
+    async fn fetch_all_tables(
+        &self,
+        pool: &sqlx::Pool<Self::DB>,
+        schema_filter: Option<&str>,
+    ) -> anyhow::Result<Vec<TableMetadata>>;
+
+    async fn is_data_type_enum() -> anyhow::Result<bool> {
+        anyhow::Ok(false)
+    }
+
+    async fn fetch_enum_variants(
+        &self,
+        pool: &sqlx::Pool<Self::DB>,
+        type_name: &str,
+        schema: &str,
+    ) -> anyhow::Result<Vec<String>> {
+        anyhow::Ok(vec![])
+    }
 }
